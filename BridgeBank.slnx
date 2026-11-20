@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="BridgeBank.Api/BridgeBank.Api.csproj" />
+  <Project Path="BridgeBank.Api.Tests/BridgeBank.Api.Tests.csproj" />
+  <Project Path="BridgeBank.Application/BridgeBank.Application.csproj" />
+  <Project Path="BridgeBank.Application.Tests/BridgeBank.Application.Tests.csproj" />
+  <Project Path="BridgeBank.Domain.Tests/BridgeBank.Domain.Tests.csproj" />
+  <Project Path="BridgeBank.Domain/BridgeBank.Domain.csproj" />
+  <Project Path="BridgeBank.Infrastructure.Tests/BridgeBank.Infrastructure.Tests.csproj" />
+  <Project Path="BridgeBank.Infrastructure/BridgeBank.Infrastructure.csproj" />
+</Solution>
