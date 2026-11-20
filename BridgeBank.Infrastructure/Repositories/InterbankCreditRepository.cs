@@ -36,7 +36,9 @@ public class InterbankCreditRepository : IInterbankCreditRepository
             WHERE AccountNumber = @AccountNumber;
 
             SELECT Id FROM InboundTransfers
-            WHERE SourceBankCode = @SourceBankCode AND ClientReference = @ClientReference;
+            WHERE SourceBankCode = @SourceBankCode
+              AND SourceAccountNumber = @SourceAccountNumber
+              AND ClientReference = @ClientReference;
             """;
 
         using var results = await connection.QueryMultipleAsync(
@@ -45,6 +47,7 @@ public class InterbankCreditRepository : IInterbankCreditRepository
             {
                 AccountNumber = accountNumber,
                 SourceBankCode = sourceBankCode,
+                SourceAccountNumber = sourceAccountNumber,
                 ClientReference = clientReference
             },
             dbTransaction);

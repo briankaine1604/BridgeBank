@@ -9,7 +9,6 @@ using BridgeBank.Infrastructure.Database;
 using BridgeBank.Infrastructure.Interbank;
 using BridgeBank.Infrastructure.Repositories;
 using BridgeBank.Infrastructure.Security;
-using BridgeBank.Infrastructure.Vtpass;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -77,8 +76,8 @@ builder.Services.AddScoped<IAirtimePurchaseRepository, AirtimePurchaseRepository
 builder.Services.AddScoped<IAirtimeService, AirtimeService>();
 builder.Services.AddScoped<IInterbankCreditRepository, InterbankCreditRepository>();
 builder.Services.AddScoped<IInterbankService, InterbankService>();
-builder.Services.Configure<VtpassOptions>(
-    builder.Configuration.GetSection(VtpassOptions.SectionName));
+builder.Services.AddScoped<IInterbankAirtimeRepository, InterbankAirtimeRepository>();
+builder.Services.AddScoped<IInterbankAirtimeService, InterbankAirtimeService>();
 builder.Services.Configure<BankOptions>(
     builder.Configuration.GetSection(BankOptions.SectionName));
 builder.Services.Configure<InterbankOptions>(
@@ -96,12 +95,12 @@ builder.Services.AddHttpClient<IInterbankClient, InterbankClient>((sp, client) =
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
-builder.Services.AddHttpClient<IAirtimeProvider, VtpassService>((sp, client) =>
+// Airtime goes through the other bank, which is the only one holding VTpass credentials.
+builder.Services.AddHttpClient<IAirtimeProvider, PeerAirtimeProvider>((sp, client) =>
 {
-    var options = sp.GetRequiredService<IOptions<VtpassOptions>>().Value;
-    client.BaseAddress = new Uri(options.BaseUrl);
-    client.DefaultRequestHeaders.Add("api-key", options.ApiKey);
-    client.DefaultRequestHeaders.Add("secret-key", options.SecretKey);
+    var options = sp.GetRequiredService<IOptions<InterbankOptions>>().Value;
+    client.BaseAddress = new Uri(options.PeerBaseUrl);
+    client.DefaultRequestHeaders.Add("X-Bank-Secret", options.PeerSecret);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 

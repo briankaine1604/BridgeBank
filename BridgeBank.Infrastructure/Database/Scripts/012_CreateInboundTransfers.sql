@@ -11,5 +11,7 @@ CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
 FOREIGN KEY (AccountId) REFERENCES Accounts(Id)
 );
 
-CREATE UNIQUE INDEX UX_InboundTransfers_Source_ClientReference
-    ON InboundTransfers (SourceBankCode, ClientReference);
+-- Scoped to the sending account as well as the bank: a client reference is only unique per
+-- account, so two accounts at the same bank can legitimately use the same one.
+CREATE UNIQUE INDEX UX_InboundTransfers_Source_Account_ClientReference
+    ON InboundTransfers (SourceBankCode, SourceAccountNumber, ClientReference);
