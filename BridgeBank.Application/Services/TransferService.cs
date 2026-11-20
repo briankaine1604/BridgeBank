@@ -78,13 +78,24 @@ public class TransferService : ITransferService
             clientReference);
 
         if (begin.ExistingStatus is not null)
-            return begin.ExistingStatus switch
+        {
+            // Same key, different payment: the stored one is the truth, so this is a conflict.
+            if (begin.DestinationAccountNumber != request.DestinationAccountNumber
+                || begin.Amount != request.Amount)
+                return new TransferResult(TransferOutcome.ClientReferenceReused);
+
+            switch (begin.ExistingStatus)
             {
-                TransferStatus.Completed => new TransferResult(
-                    TransferOutcome.Success, begin.TransferId, begin.SourceBalance),
-                TransferStatus.Pending => new TransferResult(TransferOutcome.PeerUnavailable),
-                _ => new TransferResult(TransferOutcome.TransferFailed)
-            };
+                case TransferStatus.Completed:
+                    return new TransferResult(
+                        TransferOutcome.Success, begin.TransferId, begin.SourceBalance);
+                case TransferStatus.Failed:
+                    return new TransferResult(TransferOutcome.TransferFailed);
+            }
+
+            // Still Pending: send again with the stored values. The far bank's own (bank,
+            // reference) record is what makes the resend safe rather than a second payment.
+        }
 
         if (begin.Outcome != TransferOutcome.Success)
             return new TransferResult(begin.Outcome);

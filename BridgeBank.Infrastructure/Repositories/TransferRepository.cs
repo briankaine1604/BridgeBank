@@ -173,7 +173,8 @@ public class TransferRepository : ITransferRepository
             destination.Balance);
     }
 
-    private sealed record ExistingExternalTransfer(Guid Id, TransferStatus Status);
+    private sealed record ExistingExternalTransfer(
+        Guid Id, TransferStatus Status, string DestinationAccountNumber, decimal Amount);
 
     // The debit and the Pending row are committed before the peer is called: holding the account
     // lock across a network call would block every other operation on it.
@@ -196,7 +197,7 @@ public class TransferRepository : ITransferRepository
             FROM Accounts WITH (UPDLOCK, ROWLOCK)
             WHERE Id = @SourceAccountId AND CustomerId = @CustomerId;
 
-            SELECT Id, Status FROM Transfers
+            SELECT Id, Status, DestinationAccountNumber, Amount FROM Transfers
             WHERE SourceAccountId = @SourceAccountId AND ClientReference = @ClientReference;
             """;
 
@@ -224,7 +225,13 @@ public class TransferRepository : ITransferRepository
         {
             dbTransaction.Rollback();
             return new ExternalTransferBegin(
-                TransferOutcome.Success, existing.Id, source.AccountNumber, source.Balance, existing.Status);
+                TransferOutcome.Success,
+                existing.Id,
+                source.AccountNumber,
+                source.Balance,
+                existing.Status,
+                existing.DestinationAccountNumber,
+                existing.Amount);
         }
 
         if (source.AccountStatus != AccountStatus.Active)

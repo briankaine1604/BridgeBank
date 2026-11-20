@@ -10,4 +10,6 @@ public record ExternalTransferBegin(
     Guid TransferId = default,
     string SourceAccountNumber = "",
     decimal SourceBalance = 0,
-    TransferStatus? ExistingStatus = null);
+    TransferStatus? ExistingStatus = null,
+    string DestinationAccountNumber = "",
+    decimal Amount = 0);
